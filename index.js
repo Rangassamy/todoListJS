@@ -1,36 +1,59 @@
-// Récuperation des éléments en HTML
+// Récupération des éléments en HTML
 const todoForm = document.getElementById("todoForm");
 const todoInput = document.getElementById("todoInput");
 const todoList = document.getElementById("todo");
-const Tasks = [];
 
-// Fonction qui écoute lorque le formulaire est valider
+// Fonction qui écoute lorsque le formulaire est validé
 todoForm.addEventListener("submit", (e) => {
-  // empêche le rechargement de la page
   e.preventDefault();
 
-  // Permet d'éviter les beugs lorsque l'utilisateur ne met rien dans l'input
   if (todoInput.value === "") {
     return alert("Veuillez saisir une tâche avant de valider !");
   }
-  Tasks.push(todoInput.value);
-  localStorage.setItem("task", JSON.stringify(Tasks));
-  renderTaskTodo(todoInput.value);
-});
 
-//fonction permettant de afficher la valeur dans li
-function renderTaskTodo(value) {
-  todo.innerHTML += ` <li class="todoTask">${value}</li>`;
-  // On remet la valeur de l'input à zéro, des guillemets vide pour signaler que il ne doit rien avoir
+  // Récupérer les tâches depuis le localStorage ou initialiser un tableau vide
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+  // Ajouter la nouvelle tâche
+  tasks.push(todoInput.value);
+
+  // Sauvegarder les tâches mises à jour dans le localStorage
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+
+  // Afficher la nouvelle tâche
+  renderTask(todoInput.value);
+
+  // Réinitialiser la valeur de l'input
   todoInput.value = "";
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  renderTaskLocalStorage(JSON.parse(localStorage.getItem("task")));
 });
 
-function renderTaskLocalStorage(values) {
-  values.forEach((value) => {
-    todo.innerHTML += ` <li class="todoTask">${value}</li>`;
+// Fonction permettant d'afficher une tâche dans un élément <li>
+function renderTask(value) {
+  const li = document.createElement("li");
+  li.textContent = value;
+  li.className = "todoTask";
+
+  // Ajouter un écouteur d'événements pour supprimer la tâche au clic
+  li.addEventListener("click", () => {
+    // Supprimer la tâche de l'affichage
+    li.remove();
+
+    // Supprimer la tâche du localStorage
+    removeTaskFromLocalStorage(value);
   });
+
+  todoList.appendChild(li);
 }
+
+// Fonction pour supprimer une tâche du localStorage
+function removeTaskFromLocalStorage(value) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter((task) => task !== value);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+// Charger les tâches depuis le localStorage au chargement de la page
+window.addEventListener("DOMContentLoaded", () => {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.forEach(renderTask);
+});
